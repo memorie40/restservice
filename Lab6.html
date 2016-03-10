@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>City Finder</title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+
+
+</head>
+<body>
+<h1>Weather Finder</h1>
+<form>
+Enter A Utah City: <input type="text" id="cityfield" value="">  <input id="button" type="submit" value="Submit"><br>
+Suggestion: <span id="txtHint">Empty</span><br>
+
+</form>
+<p>City</p>
+<textarea id="dispcity">City Selected</textarea>
+<p><h2>Current Weather</h2></p>
+<div id="weather">No weather</div><br><br>
+<p><h1>The greatest comic in the world: Strange Quark</h1></p>
+<a href="http://sqcomic.com/"><img src="http://sqcomic.com/sqcomic.jpg" alt="Strange Quark Comic"></a><br>
+<br>
+<br>
+<p><h1>Automated Decision Maker</h1></p>
+<p><strong>Ask me a yes or no question, and I will help you make a decision.</strong><br>
+<div style="color:red">Scroll down to see the response!</div></p>
+<input type ="text" id="question" value="">  <input id="questionbutton" type="submit" value= "Submit Question"><br>
+<textarea id="echoquestion">What's your question</textarea><br>
+<div id="answerimage">No Answer</div>
+
+
+  
+<script>
+  
+$(document).ready(function() {
+  
+  $( "#cityfield" ).keyup(function() {
+    var url = "http://ec2-52-33-245-25.us-west-2.compute.amazonaws.com:3000/getcity?q="+$("#cityfield").val();
+  
+    $.getJSON(url,function(data)
+    {
+      var everything;
+      everything = "<ul>";
+      $.each(data, function(i,item) 
+      {
+        everything += "<li> "+data[i].city;
+      });
+      
+      everything += "</ul>";
+      $("#txtHint").html(everything);
+    })
+    .done(function() { console.log('getJSON request succeeded!'); })
+    .fail(function(jqXHR, textStatus, errorThrown) { 
+      console.log('getJSON request failed! ' + textStatus); 
+      console.log("incoming "+jqXHR.responseText);
+    })
+    .always(function() { console.log('getJSON request ended!');
+    })
+    .complete(function() { console.log("complete"); });
+  }); //end keyup
+  }); //end document.ready 
+
+  $("#button").click(function(e)
+  {
+  var value = $("#cityfield").val();
+  console.log(value);
+  $("#dispcity").text(value);
+  e.preventDefault();
+  var myurl= "https://api.wunderground.com/api/1ec1fa6580677380/geolookup/conditions/q/UT/";
+  myurl += value;
+  myurl += ".json";
+  console.log(myurl);
+  $.ajax({
+    type: "GET",
+    url : myurl,
+    contentType: "application/json; charset=utf-8",
+    dataType : "jsonp",
+    success: function (parsed_json) {
+      var location = parsed_json['location']['city'];
+      var temp_string = parsed_json['current_observation']['temperature_string'];
+      var current_weather = parsed_json['current_observation']['weather'];
+      var everything = "<ul>";
+      everything += "<li>Location: "+location;
+      everything += "<li>Temperature: "+temp_string;
+      everything += "<li>Weather: "+current_weather;
+      everything += "</ul>";
+	  console.log(everything);
+      $("#weather").html(everything);
+    },
+
+    error: function (jqXHR, status) {
+      // error handler
+      console.log("Error : " + status);
+    }
+    
+  });//end ajax    
+  }); //end #button.click  
+ 
+ $("#questionbutton").click(function(e)
+  {
+  var value = $("#question").val();
+  console.log(value);
+  $("#echoquestion").text(value);
+  e.preventDefault();
+  var answerurl= "http://yesno.wtf/api";
+  //answerurl += ".json";
+  console.log(answerurl);
+  $.ajax({
+    type: "GET",
+    url : answerurl,
+    //contentType: "application/json; charset=utf-8",
+    //dataType : "jsonp",
+    success: function (parsed_json) {
+      var answer = parsed_json['answer'];
+      var image = parsed_json['image'];
+      var everything = "<h2>";
+      everything += answer + "</h2><br><br>";
+	  everything += "<img src='" ;
+	  everything += image;
+	  everything += "'>";
+	  console.log(everything);
+      $("#answerimage").html(everything);
+    },
+    error: function (jqXHR, status) {
+      // error handler
+      console.log("Error : " + status);
+    }
+    
+  });//end ajax    
+  }); //end #questionbutton.click  
+</script>
+</body>
+</html>
